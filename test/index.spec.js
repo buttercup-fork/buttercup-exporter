@@ -1,8 +1,12 @@
-const { Vault } = require("buttercup");
-const csvjson = require("csvjson");
+const { Entry, EntryType, Vault } = require("buttercup");
+const { parse } = require("csv-parse/sync");
 const { exportVaultToCSV, exportVaultToCSVTable } = require("../source/index.js");
 
 const UUID_REXP = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/;
+
+function parseCSV(csv) {
+    return parse(csv, { columns: true });
+}
 
 function setup() {
     const vault = (this.vault = new Vault());
@@ -25,88 +29,134 @@ function setup() {
         .setProperty("password", "passw0rd");
 }
 
-describe("exportVaultToCSV", function() {
-    beforeEach(function() {
+describe("exportVaultToCSV", function () {
+    beforeEach(function () {
         setup.call(this);
     });
 
-    it("contains the correct number of lines", function() {
+    it("contains the correct number of lines", function () {
         // 7 lines expected:
         // - 3 lines for entries
         // - 1 line for heading
         // - 2 lines for groups
         // - 1 line for trailing line-ending
         return expect(exportVaultToCSV(this.vault)).to.eventually.satisfy(
-            csv => csv.split("\n").length === 7
+            (csv) => csv.split("\n").length === 7,
         );
     });
 
-    it("contains titles, usernames and passwords of entries", function() {
-        return exportVaultToCSV(this.vault).then(output => {
-            const items = csvjson.toSchemaObject(output);
-            items.forEach(item => {
-                expect(item)
-                    .to.have.property("title")
-                    .that.is.a("string");
-                expect(item)
-                    .to.have.property("username")
-                    .that.is.a("string");
-                expect(item)
-                    .to.have.property("password")
-                    .that.is.a("string");
+    it("contains titles, usernames and passwords of entries", function () {
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            items.forEach((item) => {
+                expect(item).to.have.property("title").that.is.a("string");
+                expect(item).to.have.property("username").that.is.a("string");
+                expect(item).to.have.property("password").that.is.a("string");
             });
         });
     });
 
-    it("contains entry IDs", function() {
-        return exportVaultToCSV(this.vault).then(output => {
-            const items = csvjson.toSchemaObject(output);
-            items.forEach(item => {
+    it("contains entry IDs", function () {
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            items.forEach((item) => {
                 if (item["!type"] !== "entry") return;
-                expect(item)
-                    .to.have.property("id")
-                    .that.matches(UUID_REXP);
+                expect(item).to.have.property("id").that.matches(UUID_REXP);
             });
         });
     });
 
-    it("contains group IDs and titles", function() {
-        return exportVaultToCSV(this.vault).then(output => {
-            const items = csvjson.toSchemaObject(output);
-            items.forEach(item => {
-                expect(item)
-                    .to.have.property("!group_id")
-                    .that.matches(UUID_REXP);
-                expect(item)
-                    .to.have.property("!group_name")
-                    .that.is.a("string");
+    it("contains group IDs and titles", function () {
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            items.forEach((item) => {
+                expect(item).to.have.property("!group_id").that.matches(UUID_REXP);
+                expect(item).to.have.property("!group_name").that.is.a("string");
             });
         });
     });
 
-    it("contains group hierarchy", function() {
-        return exportVaultToCSV(this.vault).then(output => {
-            const items = csvjson
-                .toSchemaObject(output)
-                .map(item => `${item["!type"]} ${item["!group_name"]}`);
+    it("contains group hierarchy", function () {
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output).map((item) => `${item["!type"]} ${item["!group_name"]}`);
             expect(items).to.contain("group Mail");
             expect(items).to.contain("group General");
         });
     });
+
+    it("contains entry types (#64)", function () {
+        const group = this.vault.findGroupsByTitle("Mail")[0];
+        const note = group.createEntry("Note");
+        note.setAttribute(Entry.Attributes.FacadeType, EntryType.Note);
+        note.setProperty("note", "Line 1\nLine 2");
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            const types = items
+                .filter((item) => item["!type"] === "entry")
+                .reduce((output, item) => ({ ...output, [item.title]: item["!entry_type"] }), {});
+            expect(types).to.deep.equal({
+                Hotmail: EntryType.Login,
+                Yahoo: EntryType.Login,
+                "Home PC": EntryType.Login,
+                Note: EntryType.Note,
+            });
+            const noteItem = items.find((item) => item.title === "Note");
+            expect(noteItem.note).to.equal("Line 1\nLine 2");
+            items
+                .filter((item) => item["!type"] === "group")
+                .forEach((item) => {
+                    expect(item["!entry_type"]).to.equal("");
+                });
+        });
+    });
+
+    it("contains entry attributes as JSON, without the type and attachments", function () {
+        const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];
+        entry.setAttribute(Entry.Attributes.FacadeType, EntryType.Website);
+        entry.setAttribute(`${Entry.Attributes.FieldTypePrefix}Secret`, "note");
+        entry.setAttribute(Entry.Attributes.Tags, "mail,personal");
+        entry.setAttribute(`${Entry.Attributes.AttachmentPrefix}abc`, "{}");
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            const item = items.find((item) => item.title === "Hotmail");
+            expect(item["!entry_type"]).to.equal(EntryType.Website);
+            const attributes = JSON.parse(item["!attributes"]);
+            expect(attributes).to.include({
+                [`${Entry.Attributes.FieldTypePrefix}Secret`]: "note",
+                [Entry.Attributes.Tags]: "mail,personal",
+            });
+            expect(attributes).to.not.have.property(Entry.Attributes.FacadeType);
+            expect(attributes).to.not.have.property(`${Entry.Attributes.AttachmentPrefix}abc`);
+            const home = items.find((item) => item.title === "Home PC");
+            expect(home).to.have.property("!attributes").that.is.a("string");
+        });
+    });
 });
 
-describe("exportVaultToCSVTable", function() {
-    beforeEach(function() {
+describe("exportVaultToCSVTable", function () {
+    beforeEach(function () {
         setup.call(this);
     });
 
-    it("outputs an array", function() {
+    it("outputs an array", function () {
         const output = exportVaultToCSVTable(this.vault);
         expect(output).to.be.an("array");
     });
 
-    it("contains the correct number of lines", function() {
+    it("contains the correct number of lines", function () {
         const output = exportVaultToCSVTable(this.vault);
         expect(output).to.have.lengthOf(3 + 2 + 1); // 3 entries, 2 groups, 1 heading
+    });
+
+    it("starts with the system headings", function () {
+        const [heading] = exportVaultToCSVTable(this.vault);
+        expect(heading.slice(0, 6)).to.deep.equal([
+            "!type",
+            "!group_id",
+            "!group_name",
+            "!group_parent",
+            "!entry_type",
+            "!attributes",
+        ]);
     });
 });
