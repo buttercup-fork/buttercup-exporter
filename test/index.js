@@ -1,10 +1,11 @@
 const chai = require("chai");
-const sinon = require("sinon");
 const chaiAsPromised = require("chai-as-promised");
+const { init } = require("buttercup");
+
+init();
 
 chai.use(chaiAsPromised);
 
 Object.assign(global, {
     expect: chai.expect,
-    sinon
 });
