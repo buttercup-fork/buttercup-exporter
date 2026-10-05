@@ -50,13 +50,27 @@ function exportVaultToCSVTable(vault) {
     csvTable.push(["!type", ...tableHeadings]);
     // Add all groups
     groups.forEach((group) => {
-        csvTable.push(["group", ...tableHeadings.map((headingKey) => group[headingKey] || "")]);
+        csvTable.push(["group", ...tableHeadings.map((headingKey) => getCell(group, headingKey))]);
     });
     // Add all entries
     entries.forEach((entry) => {
-        csvTable.push(["entry", ...tableHeadings.map((headingKey) => entry[headingKey] || "")]);
+        csvTable.push(["entry", ...tableHeadings.map((headingKey) => getCell(entry, headingKey))]);
     });
     return csvTable;
+}
+
+/**
+ * A row's value for a column, or an empty string. Only the row's own
+ * properties count: a field named like an Object.prototype member
+ * (`toString`, `constructor`...) would otherwise give every row without that
+ * field the inherited function
+ * @param {Object} row A group or entry row
+ * @param {String} key The column
+ * @returns {String} The cell value
+ * @private
+ */
+function getCell(row, key) {
+    return (Object.hasOwn(row, key) && row[key]) || "";
 }
 
 function extractGroups(group) {
