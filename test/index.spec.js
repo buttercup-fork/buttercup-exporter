@@ -131,6 +131,23 @@ describe("exportVaultToCSV", function () {
             expect(home).to.have.property("!attributes").that.is.a("string");
         });
     });
+    it("exports fields named like Object.prototype members", function () {
+        const names = ["toString", "constructor", "valueOf", "hasOwnProperty"];
+        const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];
+        names.forEach((name) => entry.setProperty(name, `${name} value`));
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            const hotmail = items.find((item) => item.title === "Hotmail");
+            const yahoo = items.find((item) => item.title === "Yahoo");
+            const group = items.find((item) => item["!type"] === "group");
+            names.forEach((name) => {
+                expect(hotmail[name]).to.equal(`${name} value`);
+                // Entries and groups without the field get an empty cell
+                expect(yahoo[name]).to.equal("");
+                expect(group[name]).to.equal("");
+            });
+        });
+    });
 });
 
 describe("exportVaultToCSVTable", function () {
