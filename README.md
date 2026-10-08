@@ -6,7 +6,7 @@
 [![Build Status](https://travis-ci.org/buttercup/buttercup-exporter.svg?branch=master)](https://travis-ci.org/buttercup/buttercup-exporter) [![npm version](https://badge.fury.io/js/%40buttercup%2Fexporter.svg)](https://www.npmjs.com/package/@buttercup/exporter)
 
 ## About
-This library provides methods to allow you to export [Buttercup](https://buttercup.pw) vaults to CSV.
+This library provides methods to allow you to export [Buttercup](https://buttercup.codekunde.net) vaults to CSV.
 
 Install from git:
 
