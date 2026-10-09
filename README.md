@@ -1,17 +1,17 @@
 # Buttercup Exporter
 > Export Buttercup vaults
 
-**CodeKunde fork** of [buttercup/buttercup-exporter](https://github.com/buttercup/buttercup-exporter), from 1.1.0. It isn't on npm; the apps install it from git. See the [changelog](CHANGELOG.md). The badges below are upstream's.
+**CodeKunde fork** of [buttercup/buttercup-exporter](https://github.com/buttercup/buttercup-exporter), from 1.1.0. It isn't on npm; the apps install it from git. See the [changelog](CHANGELOG.md).
 
-[![Build Status](https://travis-ci.org/buttercup/buttercup-exporter.svg?branch=master)](https://travis-ci.org/buttercup/buttercup-exporter) [![npm version](https://badge.fury.io/js/%40buttercup%2Fexporter.svg)](https://www.npmjs.com/package/@buttercup/exporter)
+[![Buttercup](images/buttercup-slim.svg)](https://buttercup.codekunde.net) [![Tests](https://github.com/buttercup-fork/buttercup-exporter/actions/workflows/test.yml/badge.svg)](https://github.com/buttercup-fork/buttercup-exporter/actions/workflows/test.yml)
 
 ## About
 This library provides methods to allow you to export [Buttercup](https://buttercup.codekunde.net) vaults to CSV.
 
-Install from git:
+Install from GitHub:
 
 ```shell
-npm install git+http://192.168.168.6:3050/buttercup.codekunde/buttercup-exporter.git#master --save
+npm install github:buttercup-fork/buttercup-exporter --save
 ```
 
 Requires NodeJS 22 or later.
