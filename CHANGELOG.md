@@ -2,6 +2,8 @@
 
 ## Unreleased (codekunde fork)
 
+ * **Tooling**: installs from `github:buttercup-fork/buttercup-exporter`; CI runs on branch pushes only (plus manual runs); `husky`, `lint-staged` and `npm-run-all` are replaced or dropped (`npm-run-all2`; `npm run format` formats), dev dependencies updated (`chai` 6, `chai-as-promised` 8, `mocha` 12.0.3), `npm audit` clean
+
  * **Feature**:
    * [importer#64](https://github.com/buttercup/buttercup-importer/issues/64) / [importer#60](https://github.com/buttercup/buttercup-importer/issues/60) CSV exports keep each entry's type (new `!entry_type` column) and its attributes (new `!attributes` column, as JSON: field value types such as multi-line notes and OTP, field order, tags, password-change time). Re-importing used to turn every entry into a login and show a website's URL as a custom field. Attachment references are left out, since the CSV doesn't carry attachments. The format is documented in the README
  * Entries are read straight from the `Entry` API (`getProperty`, `getAttribute`, `getType`) instead of through `createEntryFacade`, so the exporter no longer loads `buttercup` itself, which is ESM-only since core 7. The `buttercup` peer dependency is now `>= 6.0.0`

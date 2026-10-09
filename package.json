@@ -12,19 +12,9 @@
     "test:format": "prettier --check '{source,test}/**/*.js'",
     "test:unit": "c8 --100 --reporter=text mocha -r test/index.js 'test/**/*.spec.js'"
   },
-  "lint-staged": {
-    "{source,test}/**/*.js": [
-      "prettier --write"
-    ]
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/buttercup/buttercup-exporter.git"
+    "url": "git+https://github.com/buttercup-fork/buttercup-exporter.git"
   },
   "keywords": [
     "export",
@@ -36,22 +26,20 @@
   "author": "Perry Mitchell <perry@perrymitchell.net>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/buttercup/buttercup-exporter/issues"
+    "url": "https://github.com/buttercup-fork/buttercup-exporter/issues"
   },
-  "homepage": "https://github.com/buttercup/buttercup-exporter#readme",
+  "homepage": "https://github.com/buttercup-fork/buttercup-exporter#readme",
   "dependencies": {
     "csv-stringify": "^6.9.0"
   },
   "devDependencies": {
     "buttercup": "git+http://192.168.168.6:3050/buttercup.codekunde/buttercup-core.git#master",
     "c8": "^12.0.0",
-    "chai": "^4.5.0",
-    "chai-as-promised": "^7.1.2",
+    "chai": "^6.3.0",
+    "chai-as-promised": "^8.0.2",
     "csv-parse": "^7.0.3",
-    "husky": "^4.3.8",
-    "lint-staged": "^16.4.0",
-    "mocha": "^12.0.2",
-    "npm-run-all": "^4.1.5",
+    "mocha": "^12.0.3",
+    "npm-run-all2": "^9.0.3",
     "prettier": "^3.9.9"
   },
   "peerDependencies": {
@@ -59,5 +47,8 @@
   },
   "engines": {
     "node": ">= 22"
+  },
+  "overrides": {
+    "pbkdf2": "^3.1.6"
   }
 }
