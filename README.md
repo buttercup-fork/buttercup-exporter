@@ -54,4 +54,4 @@ The first row is the header. Each following row is a group or an entry, set by t
 
 Every other column is an entry property (`title`, `username`, `password`, `url`, custom fields...). Each entry only fills the properties it has, so the rest of its row is empty.
 
-[@buttercup/importer](https://github.com/buttercup/buttercup-importer)'s Buttercup CSV importer reads this format back. `!entry_type` and `!attributes` were added in this fork; CSVs without them still import, as login entries.
+[@buttercup/importer](https://github.com/buttercup-fork/buttercup-importer)'s Buttercup CSV importer reads this format back. `!entry_type` and `!attributes` were added in this fork; CSVs without them still import, as login entries.
