@@ -54,4 +54,6 @@ The first row is the header. Each following row is a group or an entry, set by t
 
 Every other column is an entry property (`title`, `username`, `password`, `url`, custom fields...). Each entry only fills the properties it has, so the rest of its row is empty.
 
+A cell that a spreadsheet would run as a formula (one starting with `=`, `+`, `-`, `@`, a tab or a carriage return, after any number of `'`) is written with one extra `'` in front, so it is shown as text. This applies to every cell, including the header and group titles. A reader removes exactly one leading `'` from such a cell to get the original value. `exportVaultToCSVTable` returns the values without this escaping.
+
 [@buttercup/importer](https://github.com/buttercup-fork/buttercup-importer)'s Buttercup CSV importer reads this format back. `!entry_type` and `!attributes` were added in this fork; CSVs without them still import, as login entries.

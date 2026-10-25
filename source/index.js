@@ -6,18 +6,39 @@ const SYSTEM_HEADINGS = ["!group_id", "!group_name", "!group_parent", "!entry_ty
 const ATTRIBUTE_FACADE_TYPE = "BC_ENTRY_FACADE_TYPE";
 // Attachment references point at attachment data a CSV doesn't carry
 const ATTRIBUTE_ATTACHMENT_PREFIX = "BC_ENTRY_ATTACHMENT:";
+// A cell a spreadsheet would run as a formula: one starting with = + - @, a
+// tab or a carriage return, after any number of quotes (B-678)
+const FORMULA_CELL = /^'*[=+\-@\t\r]/;
 
 /**
  * Export a vault to Buttercup CSV
+ * Every cell a spreadsheet would read as a formula gets one extra `'` in
+ * front, so it is shown as text. The importer removes exactly one again, so
+ * values come back unchanged (a value that already starts with `'` and then a
+ * formula character gets one more, for the same reason)
  * @param {Vault} vault The vault to export
  * @returns {Promise.<String>} The CSV text
  */
 function exportVaultToCSV(vault) {
-    return Promise.resolve().then(() => stringify(exportVaultToCSVTable(vault)));
+    return Promise.resolve().then(() =>
+        stringify(exportVaultToCSVTable(vault).map((row) => row.map(escapeFormulaCell))),
+    );
 }
 
 /**
- * Export a vault to a table of rows (the CSV before stringifying)
+ * Prefix a cell that a spreadsheet would read as a formula with `'`
+ * @param {String} cell The cell value
+ * @returns {String} The value to write
+ * @private
+ */
+function escapeFormulaCell(cell) {
+    return FORMULA_CELL.test(cell) ? `'${cell}` : cell;
+}
+
+/**
+ * Export a vault to a table of rows (the CSV before stringifying). The cells
+ * are the raw values: the formula escaping of `exportVaultToCSV` is not
+ * applied, so a caller that writes its own CSV from this table must do it
  * @param {Vault} vault The vault to export
  * @returns {Array.<Array.<String>>} Header row, then a row per group and entry
  */
