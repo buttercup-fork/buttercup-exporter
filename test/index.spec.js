@@ -148,6 +148,46 @@ describe("exportVaultToCSV", function () {
             });
         });
     });
+
+    it("prefixes formula-like values with a quote so spreadsheets show them as text (B-678)", function () {
+        const values = {
+            equals: '=HYPERLINK("https://example.com")',
+            plus: "+1+1",
+            minus: "-1+1",
+            at: "@SUM(1,1)",
+            tab: "\t=1+1",
+            cr: "\r=1+1",
+            quoted: "'=1+1",
+            twoQuotes: "''+1",
+        };
+        const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];
+        Object.keys(values).forEach((key) => entry.setProperty(key, values[key]));
+        entry.setProperty("=field", "name starts with =");
+        this.vault.findGroupsByTitle("Mail")[0].setTitle("=group");
+        return exportVaultToCSV(this.vault).then((output) => {
+            const items = parseCSV(output);
+            const hotmail = items.find((item) => item.title === "Hotmail");
+            Object.keys(values).forEach((key) => {
+                expect(hotmail[key]).to.equal(`'${values[key]}`);
+            });
+            // Field names (the header) and group titles too
+            expect(hotmail["'=field"]).to.equal("name starts with =");
+            expect(items.map((item) => item["!group_name"])).to.include("'=group");
+        });
+    });
+
+    it("leaves values that can't start a formula unchanged (B-678)", function () {
+        const values = ["'text", "a=b", "1-2", "", "' =1", '{"json":1}'];
+        const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];
+        values.forEach((value, index) => entry.setProperty(`plain${index}`, value));
+        return exportVaultToCSV(this.vault).then((output) => {
+            const hotmail = parseCSV(output).find((item) => item.title === "Hotmail");
+            values.forEach((value, index) => {
+                expect(hotmail[`plain${index}`]).to.equal(value);
+            });
+            expect(hotmail.password).to.equal("abc123");
+        });
+    });
 });
 
 describe("exportVaultToCSVTable", function () {
