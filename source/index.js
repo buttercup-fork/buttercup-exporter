@@ -9,6 +9,11 @@ const ATTRIBUTE_ATTACHMENT_PREFIX = "BC_ENTRY_ATTACHMENT:";
 // A cell a spreadsheet would run as a formula: one starting with = + - @, a
 // tab or a carriage return, after any number of quotes (B-678)
 const FORMULA_CELL = /^'*[=+\-@\t\r]/;
+// Column names the system columns use (`!type`, `!group_id`..., `id`), and
+// the escape character itself: a field whose name matches is written with a
+// `\` in front, so it can't overwrite or duplicate a system column (B-680)
+const PROPERTY_ESCAPE = "\\";
+const RESERVED_PROPERTY = /^(!|\\|id$)/;
 
 /**
  * Export a vault to Buttercup CSV
@@ -114,7 +119,7 @@ function extractGroups(group) {
 
 function extractGroupEntries(group) {
     const items = group.getEntries().map((entry) =>
-        Object.assign({}, entry.getProperty(), {
+        Object.assign({}, encodeProperties(entry.getProperty()), {
             "!group_id": group.id,
             "!group_name": "",
             "!group_parent": "",
@@ -130,6 +135,23 @@ function extractGroupEntries(group) {
             items.push(...extractGroupEntries(subGroup));
         });
     return items;
+}
+
+/**
+ * Name an entry's properties by their column: a name that is reserved for a
+ * system column (`id`, `!...`) or starts with the escape character gets one
+ * `\` in front. A reader removes exactly one leading `\` from such a column
+ * @param {Object} properties The entry's properties
+ * @returns {Object} The properties by column name
+ * @private
+ */
+function encodeProperties(properties) {
+    return Object.fromEntries(
+        Object.entries(properties).map(([name, value]) => [
+            RESERVED_PROPERTY.test(name) ? `${PROPERTY_ESCAPE}${name}` : name,
+            value,
+        ]),
+    );
 }
 
 /**

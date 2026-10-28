@@ -206,6 +206,43 @@ describe("exportVaultToCSV", function () {
         });
     });
 
+    it("writes fields named like a system column under an escaped name (B-680)", function () {
+        const names = [
+            "id",
+            "!type",
+            "!group_id",
+            "!group_name",
+            "!group_parent",
+            "!entry_type",
+            "!attributes",
+            "!other",
+            "\\id",
+            "\\",
+        ];
+        const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];
+        names.forEach((name) => entry.setProperty(name, `value of ${name}`));
+        entry.setProperty("identity", "not reserved");
+        return exportVaultToCSV(this.vault).then((output) => {
+            const [header] = parse(output);
+            expect(header.filter((name) => name === "!type")).to.have.lengthOf(1);
+            expect(header.filter((name) => name === "id")).to.have.lengthOf(1);
+            const items = parseCSV(output);
+            const hotmail = items.find((item) => item.title === "Hotmail");
+            names.forEach((name) => {
+                expect(hotmail[`\\${name}`]).to.equal(`value of ${name}`);
+            });
+            expect(hotmail.identity).to.equal("not reserved");
+            // The system columns keep their own values
+            expect(hotmail["!type"]).to.equal("entry");
+            expect(hotmail.id).to.equal(entry.id);
+            expect(hotmail["!group_id"]).to.equal(entry.getGroup().id);
+            expect(hotmail["!group_name"]).to.equal("");
+            expect(hotmail["!group_parent"]).to.equal("");
+            expect(hotmail["!entry_type"]).to.equal(EntryType.Login);
+            expect(hotmail["!attributes"]).to.not.contain("value of");
+        });
+    });
+
     it("leaves values that can't start a formula unchanged (B-678)", function () {
         const values = ["'text", "a=b", "1-2", "", "' =1", '{"json":1}'];
         const entry = this.vault.findEntriesByProperty("title", "Hotmail")[0];

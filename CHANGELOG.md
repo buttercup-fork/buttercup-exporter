@@ -12,6 +12,7 @@
  * **Bugfix**:
    * Exporting failed for the whole vault ("Invalid Casting Value: returned value must return a string ... got undefined") when any entry had a field named like an `Object.prototype` member (`toString`, `constructor`, `valueOf`, ...): every row without that field read the inherited function. Rows now only use their own fields. The specs use core `b550ed7`, which accepts these field names
    * The export left the Trash in: deleted entries were written with their passwords, and after a re-import they came back as live entries in an ordinary group named "Trash". The Trash and everything in it are now left out (B-679)
+   * A field named like a system column (`id`, `!type`, `!group_id`, `!group_name`, `!group_parent`, `!entry_type`, `!attributes`, or any name starting with `!`) was lost: the system value overwrote it, and a field named `!type` made the whole file fail to re-import ("Unrecognised item type in import"). Such fields, and fields whose name starts with `\`, are now written in a column named with one extra `\` in front (`\id`, `\!type`); the importer removes it (B-680)
  * `csv-stringify` 5 → 6 (its sync API replaces `pify`, which is dropped)
  * Requires NodeJS 22 or later. Tests run on 22 and 24 in GitHub/Forgejo Actions (Travis removed), against the core fork; coverage uses `c8` (still 100%) instead of `nyc`; `prettier` 1 → 3, `mocha` 12, `csv-parse` replaces `csvjson` in the specs, and `sinon` (unused) is dropped. `npm audit`: 0 vulnerabilities
 
