@@ -47,8 +47,10 @@ function exportVaultToCSVTable(vault) {
     const entries = [];
     const usedKeys = [];
     const csvTable = [];
-    // Extract object representations of all groups and entries
-    const rootGroups = vault.getGroups();
+    // Extract object representations of all groups and entries. The Trash
+    // and everything in it stay out: deleted entries would come back as live
+    // entries in an ordinary group on re-import (B-679)
+    const rootGroups = vault.getGroups().filter(isExported);
     rootGroups.forEach((group) => {
         entries.push(...extractGroupEntries(group));
     });
@@ -104,6 +106,7 @@ function extractGroups(group) {
         },
         ...group
             .getGroups()
+            .filter(isExported)
             .map((sub) => extractGroups(sub))
             .reduce((output, result) => [...output, ...result], []),
     ];
@@ -120,10 +123,23 @@ function extractGroupEntries(group) {
             id: entry.id,
         }),
     );
-    group.getGroups().forEach((subGroup) => {
-        items.push(...extractGroupEntries(subGroup));
-    });
+    group
+        .getGroups()
+        .filter(isExported)
+        .forEach((subGroup) => {
+            items.push(...extractGroupEntries(subGroup));
+        });
     return items;
+}
+
+/**
+ * Whether a group is exported: every group but the Trash (at any level)
+ * @param {Group} group The group
+ * @returns {Boolean}
+ * @private
+ */
+function isExported(group) {
+    return !group.isTrash();
 }
 
 /**

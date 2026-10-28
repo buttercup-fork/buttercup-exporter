@@ -1,4 +1,4 @@
-const { Entry, EntryType, Vault } = require("buttercup");
+const { Entry, EntryType, Group, Vault } = require("buttercup");
 const { parse } = require("csv-parse/sync");
 const { exportVaultToCSV, exportVaultToCSVTable } = require("../source/index.js");
 
@@ -173,6 +173,36 @@ describe("exportVaultToCSV", function () {
             // Field names (the header) and group titles too
             expect(hotmail["'=field"]).to.equal("name starts with =");
             expect(items.map((item) => item["!group_name"])).to.include("'=group");
+        });
+    });
+
+    it("leaves out the Trash and everything in it (B-679)", function () {
+        this.vault.createGroup("Trash").setAttribute(Group.Attribute.Role, "trash");
+        const mail = this.vault.findGroupsByTitle("Mail")[0];
+        const deleted = mail.createEntry("Deleted").setProperty("password", "deleted-secret");
+        const deletedGroup = mail.createGroup("Old");
+        deletedGroup.createEntry("In deleted group").setProperty("password", "group-secret");
+        deleted.delete();
+        deletedGroup.delete();
+        const trash = this.vault.getTrashGroup();
+        expect(deleted.isInTrash()).to.equal(true);
+        expect(trash.getGroups().map((group) => group.getTitle())).to.deep.equal(["Old"]);
+        return exportVaultToCSV(this.vault).then((output) => {
+            expect(output).to.not.contain("secret");
+            const items = parseCSV(output);
+            const titles = items.map(
+                (item) => `${item["!type"]} ${item["!group_name"] || item.title}`,
+            );
+            expect(titles).to.have.members([
+                "group Mail",
+                "group General",
+                "entry Hotmail",
+                "entry Yahoo",
+                "entry Home PC",
+            ]);
+            const groupIDs = items.map((item) => item["!group_id"]);
+            expect(groupIDs).to.not.include(trash.id);
+            expect(groupIDs).to.not.include(deletedGroup.id);
         });
     });
 

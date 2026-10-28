@@ -41,7 +41,7 @@ exportVaultToCSV(vault).then(csv => {
 
 ## CSV format
 
-The first row is the header. Each following row is a group or an entry, set by the `!type` column (`group` or `entry`):
+The first row is the header. Each following row is a group or an entry, set by the `!type` column (`group` or `entry`). The Trash and everything in it are not exported:
 
 | Column | Groups | Entries |
 |--------|--------|---------|
