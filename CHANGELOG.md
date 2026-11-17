@@ -1,6 +1,6 @@
 # Buttercup Exporter Changelog
 
-## Unreleased (codekunde fork)
+## v1.2.0 (codekunde fork)
 
  * **Tooling**: installs from `github:buttercup-fork/buttercup-exporter`; CI runs on branch pushes only (plus manual runs); `husky`, `lint-staged` and `npm-run-all` are replaced or dropped (`npm-run-all2`; `npm run format` formats), dev dependencies updated (`chai` 6, `chai-as-promised` 8, `mocha` 12.0.3), `npm audit` clean
 
