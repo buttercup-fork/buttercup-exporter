@@ -1,8 +1,12 @@
 {
-  "name": "@buttercup/exporter",
-  "version": "1.2.0",
+  "name": "@buttercup-fork/exporter",
+  "version": "1.2.1",
   "description": "Export Buttercup vaults",
   "main": "source/index.js",
+  "files": [
+    "source/**/*.js",
+    "*.md"
+  ],
   "directories": {
     "test": "test"
   },
@@ -50,5 +54,8 @@
   },
   "overrides": {
     "pbkdf2": "^3.1.6"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

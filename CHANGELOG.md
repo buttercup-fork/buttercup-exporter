@@ -1,6 +1,12 @@
 # Buttercup Exporter Changelog
 
-## v1.2.0 (codekunde fork)
+## v1.2.1
+_2026-11-26_ (CodeKunde fork)
+
+ * **New package name:** `@buttercup-fork/exporter` on npm (require it instead of `@buttercup/exporter`), staged from GitHub Actions through trusted publishing with provenance (`publish.yml`, started by hand); the package name `@buttercup/exporter` stays upstream's. The `buttercup` peer dependency stays: install the fork's core under that name (`buttercup@npm:@buttercup-fork/core`)
+ * The npm package holds only `source/` and the Markdown files (`files` in `package.json`; before, everything in the repository would have been packed)
+
+## v1.2.0 (CodeKunde fork)
 
  * **Tooling**: installs from `github:buttercup-fork/buttercup-exporter`; CI runs on branch pushes only (plus manual runs); `husky`, `lint-staged` and `npm-run-all` are replaced or dropped (`npm-run-all2`; `npm run format` formats), dev dependencies updated (`chai` 6, `chai-as-promised` 8, `mocha` 12.0.3), `npm audit` clean
 
