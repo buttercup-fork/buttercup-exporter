@@ -1,18 +1,20 @@
 # Buttercup Exporter
 > Export Buttercup vaults
 
-**CodeKunde fork** of [buttercup/buttercup-exporter](https://github.com/buttercup/buttercup-exporter), from 1.1.0. It isn't on npm; the apps install it from git. See the [changelog](CHANGELOG.md).
+**CodeKunde fork** of [buttercup/buttercup-exporter](https://github.com/buttercup/buttercup-exporter), from 1.1.0. It is published on npm as `@buttercup-fork/exporter` (`@buttercup/exporter` on npm is upstream's 1.1.0). See the [changelog](CHANGELOG.md).
 
 [![Buttercup](images/buttercup-slim.svg)](https://buttercup.codekunde.net) [![Tests](https://github.com/buttercup-fork/buttercup-exporter/actions/workflows/test.yml/badge.svg)](https://github.com/buttercup-fork/buttercup-exporter/actions/workflows/test.yml)
 
 ## About
 This library provides methods to allow you to export [Buttercup](https://buttercup.codekunde.net) vaults to CSV.
 
-Install from GitHub:
+Install it with the fork's core, under the name `buttercup` (a peer dependency):
 
 ```shell
-npm install github:buttercup-fork/buttercup-exporter --save
+npm install @buttercup-fork/exporter buttercup@npm:@buttercup-fork/core --save
 ```
+
+Until `@buttercup-fork/core` is on npm, install core from git instead: `buttercup@github:buttercup-fork/buttercup-core`.
 
 Requires NodeJS 22 or later.
 
@@ -22,7 +24,7 @@ Require the exporter method and pass a vault instance to it:
 ```javascript
 const fs = require("fs");
 const { Vault, init } = require("buttercup");
-const { exportVaultToCSV } = require("@buttercup/exporter");
+const { exportVaultToCSV } = require("@buttercup-fork/exporter");
 
 init();
 
@@ -56,4 +58,4 @@ Every other column is an entry property (`title`, `username`, `password`, `url`,
 
 A cell that a spreadsheet would run as a formula (one starting with `=`, `+`, `-`, `@`, a tab or a carriage return, after any number of `'`) is written with one extra `'` in front, so it is shown as text. This applies to every cell, including the header and group titles. A reader removes exactly one leading `'` from such a cell to get the original value. `exportVaultToCSVTable` returns the values without this escaping.
 
-[@buttercup/importer](https://github.com/buttercup-fork/buttercup-importer)'s Buttercup CSV importer reads this format back. `!entry_type` and `!attributes` were added in this fork; CSVs without them still import, as login entries.
+[@buttercup-fork/importer](https://github.com/buttercup-fork/buttercup-importer)'s Buttercup CSV importer reads this format back. `!entry_type` and `!attributes` were added in this fork; CSVs without them still import, as login entries.
